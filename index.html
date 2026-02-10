@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando...</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0066CC',
+                        'primary-foreground': '#FFFFFF',
+                        foreground: '#1A1A1A',
+                        muted: '#666666',
+                        border: '#E0E0E0',
+                        secondary: '#F5F5F5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1A1A1A; }
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; font-weight: 700; }
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #0066CC;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="bg-white">
+    <div id="loading" class="loading-screen">
+        <div class="text-center">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="font-medium">Carregando conteúdo...</p>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+        <nav class="container mx-auto px-4 flex items-center justify-between h-16 md:h-20">
+            <div class="flex items-center gap-3">
+                <img id="header-logo" src="" alt="" class="h-10 md:h-12 object-contain hidden">
+                <span id="header-name" class="text-xl md:text-2xl font-bold text-foreground"></span>
+            </div>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#services" class="text-foreground hover:text-primary transition-colors font-medium">Serviços</a>
+                <a href="#about" class="text-foreground hover:text-primary transition-colors font-medium">Sobre</a>
+                <a href="#contact" class="text-foreground hover:text-primary transition-colors font-medium">Contato</a>
+                <a href="#contact" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors font-medium">Agendar</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-border py-4 px-4 flex flex-col gap-4">
+            <a href="#services" class="mobile-link text-foreground font-medium">Serviços</a>
+            <a href="#about" class="mobile-link text-foreground font-medium">Sobre</a>
+            <a href="#contact" class="mobile-link text-foreground font-medium">Contato</a>
+            <a href="#contact" class="mobile-link bg-primary text-white px-6 py-2 rounded-lg text-center font-medium">Agendar</a>
+        </div>
+    </header>
+
+    <section class="relative h-[600px] flex items-center justify-center text-center text-white overflow-hidden">
+        <div id="hero-bg" class="absolute inset-0 bg-cover bg-center z-0"></div>
+        <div class="absolute inset-0 bg-black/50 z-10"></div>
+        <div class="container mx-auto px-4 relative z-20">
+            <h1 id="hero-title" class="text-4xl md:text-6xl font-bold mb-6 leading-tight"></h1>
+            <p id="hero-subtitle" class="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-gray-200"></p>
+            <a href="#contact" id="hero-btn" class="bg-primary text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-primary/90 transition-all transform hover:scale-105 inline-block"></a>
+        </div>
+    </section>
+
+    <section id="services" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">Nossos Serviços</h2>
+                <div class="w-16 h-1 bg-primary mx-auto rounded-full"></div>
+            </div>
+            <div id="services-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Services will be injected here -->
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="py-16 md:py-24 bg-secondary">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="flex-1">
+                    <img id="about-image" src="" alt="Sobre nós" class="rounded-2xl shadow-xl w-full h-[400px] object-cover">
+                </div>
+                <div class="flex-1">
+                    <h2 id="about-title" class="text-3xl md:text-4xl font-bold text-foreground mb-6"></h2>
+                    <p id="about-description" class="text-muted leading-relaxed mb-8 text-lg"></p>
+                    <a href="#contact" class="text-primary font-bold hover:underline flex items-center gap-2">
+                        Entre em contato conosco <span>→</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-border flex flex-col md:flex-row">
+                <div class="bg-primary p-12 text-white flex-1">
+                    <h2 class="text-3xl font-bold mb-8">Informações de Contato</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="p-2 bg-white/10 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/60 text-sm">Telefone</p>
+                                <p id="contact-phone" class="font-medium text-lg"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2 bg-white/10 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/60 text-sm">E-mail</p>
+                                <p id="contact-email" class="font-medium text-lg"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="p-2 bg-white/10 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            </div>
+                            <div>
+                                <p class="text-white/60 text-sm">Endereço</p>
+                                <p id="contact-address" class="font-medium text-lg"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-12 flex-[1.5]">
+                    <h3 class="text-2xl font-bold mb-6">Envie uma mensagem</h3>
+                    <form class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Nome</label>
+                            <input type="text" class="w-full px-4 py-3 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Seu nome completo">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">E-mail</label>
+                            <input type="email" class="w-full px-4 py-3 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="seu@email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Mensagem</label>
+                            <textarea rows="4" class="w-full px-4 py-3 rounded-lg border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Como podemos ajudar?"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-4 rounded-lg font-bold hover:bg-primary/90 transition-all">Enviar Mensagem</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-foreground text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 id="footer-name" class="text-lg font-bold mb-4"></h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">Prestador de serviços profissional dedicado a oferecer qualidade e excelência.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#services" class="text-gray-400 hover:text-white transition-colors text-sm">Serviços</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors text-sm">Sobre Nós</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors text-sm">Contato</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Contato</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a id="footer-phone-link" href="" class="text-gray-400 hover:text-white transition-colors"></a></li>
+                        <li><a id="footer-email-link" href="" class="text-gray-400 hover:text-white transition-colors"></a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p>© <span id="year"></span> <span id="footer-copyright-name"></span>. Todos os direitos reservados.</p>
+                <p class="mt-4 md:mt-0">Desenvolvido com ❤️ para seu sucesso</p>
+            </div>
+        </div>
+    </footer>
+
+    <a id="whatsapp-btn" href="" target="_blank" class="fixed bottom-6 right-6 z-40 bg-green-500 hover:bg-green-600 text-white rounded-full p-4 shadow-lg transition-all duration-300 hover:scale-110 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.6 8.38 8.38 0 0 1 3.8.9L21 3.5Z"></path></svg>
+    </a>
+
+    <script src="script.js"></script>
+</body>
+</html>
