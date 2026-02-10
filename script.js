@@ -66,7 +66,7 @@ async function init() {
 async function fetchSheetCSV(gid) {
     try {
         // Formato para planilhas publicadas na web
-        const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&gid=${gid}&t=${new Date().getTime()}`;
+        const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k/pubhtml`;
         const response = await fetch(url);
         if (!response.ok) return null;
         const csvText = await response.text();
