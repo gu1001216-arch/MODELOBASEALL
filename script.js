@@ -1,5 +1,5 @@
 // Configuração do Google Sheets
-const SHEET_ID = 'YOUR_SHEET_ID_HERE'; // O usuário deve substituir pelo ID da planilha dele
+const SHEET_ID = '2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k'; // O usuário deve substituir pelo ID da planilha dele
 const SHEET_TABS = {
     config: '0', // GID da primeira aba (geralmente 0)
     services: '1' // GID da segunda aba (geralmente 1 ou outro número após criar)
