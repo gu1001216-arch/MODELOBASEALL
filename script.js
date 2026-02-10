@@ -1,8 +1,6 @@
 // Configuração do Google Sheets
-// Link original: https://docs.google.com/spreadsheets/d/e/2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k/pubhtml
 const PUB_ID = '2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k';
 
-// Dados padrão caso a planilha não esteja configurada ou ocorra erro
 const DEFAULT_DATA = {
     config: {
         businessname: 'Seu Negócio',
@@ -20,9 +18,9 @@ const DEFAULT_DATA = {
         heroimage: 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1920&q=80'
     },
     services: [
-        { title: 'Serviço 1', description: 'Descrição detalhada do primeiro serviço oferecido pela empresa.', icon: '🎯' },
-        { title: 'Serviço 2', description: 'Descrição detalhada do segundo serviço oferecido pela empresa.', icon: '⭐' },
-        { title: 'Serviço 3', description: 'Descrição detalhada do terceiro serviço oferecido pela empresa.', icon: '🚀' }
+        { title: 'Serviço 1', description: 'Descrição detalhada do primeiro serviço.', icon: '🎯' },
+        { title: 'Serviço 2', description: 'Descrição detalhada do segundo serviço.', icon: '⭐' },
+        { title: 'Serviço 3', description: 'Descrição detalhada do terceiro serviço.', icon: '🚀' }
     ]
 };
 
@@ -30,32 +28,20 @@ async function init() {
     let siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
     try {
-        // Carregar aba Config (pub?output=csv&gid=0)
-        const configRows = await fetchSheetCSV(0);
-        if (configRows && configRows.length > 1) {
-            siteData.config = parseConfig(configRows);
+        // Carregar dados usando a técnica de exportação CSV com timestamp para evitar cache
+        // Aba Config (gid=0)
+        const configData = await fetchSheetData(0);
+        if (configData && configData.length > 1) {
+            siteData.config = parseConfig(configData);
         }
 
-        // Carregar aba Services (pub?output=csv&gid=um número ID de aba)
-        // No Google Sheets publicado como CSV, o gid pode variar. 
-        // Tentamos o gid padrão da segunda aba ou buscamos por nome se necessário.
-        // Como o usuário criou agora, tentaremos gid=1602444314 (exemplo) ou similar.
-        // Para maior robustez, tentamos o gid=0 e depois o próximo disponível ou deixamos o usuário ajustar.
-        // Com base na estrutura comum, a segunda aba costuma ter um ID longo.
-        // Vou usar uma abordagem de tentar carregar e validar.
-        
-        // Tentativa de carregar a segunda aba. Se falhar, mantém o padrão.
-        // Em links /pubhtml, as abas são exportadas por ordem.
-        const servicesRows = await fetchSheetCSV('1832204562'); // GID real da aba Services identificado na planilha
-        if (servicesRows && servicesRows.length > 1) {
-            siteData.services = parseServices(servicesRows);
-        } else {
-            // Se falhar com GID específico, tentamos o índice sequencial se possível ou avisamos
-            console.warn('Aba de serviços não encontrada com GID padrão. Verifique o GID da aba Services.');
+        // Aba Services (gid=1832204562)
+        const servicesData = await fetchSheetData('1832204562');
+        if (servicesData && servicesData.length > 1) {
+            siteData.services = parseServices(servicesData);
         }
     } catch (error) {
-        console.error('Erro na integração:', error);
-        alert('Atenção: Não foi possível carregar os dados da planilha. Verifique se ela está "Publicada na Web" corretamente.');
+        console.error('Erro ao carregar planilha:', error);
     }
 
     renderSite(siteData);
@@ -63,15 +49,18 @@ async function init() {
     document.getElementById('loading').classList.add('hidden');
 }
 
-async function fetchSheetCSV(gid) {
+async function fetchSheetData(gid) {
+    // Adicionamos um parâmetro aleatório 't' para garantir que o Google e o Navegador não usem cache
+    const timestamp = new Date().getTime();
+    const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&gid=${gid}&t=${timestamp}`;
+    
     try {
-        // Formato para planilhas publicadas na web
-        const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k/pubhtml`;
         const response = await fetch(url);
-        if (!response.ok) return null;
-        const csvText = await response.text();
-        return parseCSV(csvText);
+        if (!response.ok) throw new Error('Falha na resposta do servidor');
+        const text = await response.text();
+        return parseCSV(text);
     } catch (e) {
+        console.warn(`Erro ao buscar GID ${gid}:`, e);
         return null;
     }
 }
@@ -98,22 +87,22 @@ function parseCSV(csvText) {
 }
 
 function parseConfig(rows) {
-    const headers = rows[0].map(h => h.toLowerCase().trim());
-    const values = rows[1];
+    const headers = rows[0].map(h => h.toLowerCase().trim().replace(/^"|"$/g, ''));
+    const values = rows[1].map(v => v.trim().replace(/^"|"$/g, ''));
     const config = {};
     headers.forEach((header, i) => {
-        if (values[i]) config[header] = values[i].replace(/^"|"$/g, '');
+        if (values[i]) config[header] = values[i];
     });
     return { ...DEFAULT_DATA.config, ...config };
 }
 
 function parseServices(rows) {
-    const headers = rows[0].map(h => h.toLowerCase().trim());
+    const headers = rows[0].map(h => h.toLowerCase().trim().replace(/^"|"$/g, ''));
     return rows.slice(1).map(row => {
         const service = {};
         headers.forEach((header, i) => {
             let val = row[i] || '';
-            service[header] = val.replace(/^"|"$/g, '');
+            service[header] = val.trim().replace(/^"|"$/g, '');
         });
         return service;
     }).filter(s => s.title);
@@ -121,7 +110,6 @@ function parseServices(rows) {
 
 function renderSite(data) {
     const { config, services } = data;
-
     document.title = config.businessname;
 
     const logoImg = document.getElementById('header-logo');
@@ -132,7 +120,8 @@ function renderSite(data) {
     }
     document.getElementById('header-name').textContent = config.businessname;
 
-    document.getElementById('hero-bg').style.backgroundImage = `url('${config.heroimage || DEFAULT_DATA.config.heroimage}')`;
+    const heroBg = document.getElementById('hero-bg');
+    heroBg.style.backgroundImage = `url('${config.heroimage || DEFAULT_DATA.config.heroimage}')`;
     document.getElementById('hero-title').textContent = config.herotitle;
     document.getElementById('hero-subtitle').textContent = config.herosubtitle;
     document.getElementById('hero-btn').textContent = config.herobuttontext;
@@ -173,15 +162,11 @@ function renderSite(data) {
 function setupEventListeners() {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
-    
-    mobileMenuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.onclick = () => mobileMenu.classList.toggle('hidden');
+    }
     document.querySelectorAll('.mobile-link').forEach(link => {
-        link.addEventListener('click', () => {
-            mobileMenu.classList.add('hidden');
-        });
+        link.onclick = () => mobileMenu.classList.add('hidden');
     });
 }
 
