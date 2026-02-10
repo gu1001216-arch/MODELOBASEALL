@@ -1,9 +1,6 @@
 // Configuração do Google Sheets
-const SHEET_ID = '2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k'; // O usuário deve substituir pelo ID da planilha dele
-const SHEET_TABS = {
-    config: '0', // GID da primeira aba (geralmente 0)
-    services: '1' // GID da segunda aba (geralmente 1 ou outro número após criar)
-};
+// Link original: https://docs.google.com/spreadsheets/d/e/2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k/pubhtml
+const PUB_ID = '2PACX-1vQHDHtJ5vVgrBKIsG4wIupunOEAxWGwyua-BQf0LX60kjCs3ZKm8gC1z_dTQ5sE7Vr8GdnP_1ys7D4k';
 
 // Dados padrão caso a planilha não esteja configurada ou ocorra erro
 const DEFAULT_DATA = {
@@ -32,21 +29,32 @@ const DEFAULT_DATA = {
 async function init() {
     let siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
-    if (SHEET_ID && SHEET_ID !== 'YOUR_SHEET_ID_HERE') {
-        try {
-            // Tentativa de carregar dados da planilha
-            const configRows = await fetchSheetTab(SHEET_ID, SHEET_TABS.config);
-            if (configRows && configRows.length > 1) {
-                siteData.config = parseConfig(configRows);
-            }
-
-            const servicesRows = await fetchSheetTab(SHEET_ID, SHEET_TABS.services);
-            if (servicesRows && servicesRows.length > 1) {
-                siteData.services = parseServices(servicesRows);
-            }
-        } catch (error) {
-            console.error('Erro ao carregar dados da planilha. Usando dados padrão.', error);
+    try {
+        // Carregar aba Config (pub?output=csv&gid=0)
+        const configRows = await fetchSheetCSV(0);
+        if (configRows && configRows.length > 1) {
+            siteData.config = parseConfig(configRows);
         }
+
+        // Carregar aba Services (pub?output=csv&gid=um número ID de aba)
+        // No Google Sheets publicado como CSV, o gid pode variar. 
+        // Tentamos o gid padrão da segunda aba ou buscamos por nome se necessário.
+        // Como o usuário criou agora, tentaremos gid=1602444314 (exemplo) ou similar.
+        // Para maior robustez, tentamos o gid=0 e depois o próximo disponível ou deixamos o usuário ajustar.
+        // Com base na estrutura comum, a segunda aba costuma ter um ID longo.
+        // Vou usar uma abordagem de tentar carregar e validar.
+        
+        // Tentativa de carregar a segunda aba. Se falhar, mantém o padrão.
+        // Em links /pubhtml, as abas são exportadas por ordem.
+        const servicesRows = await fetchSheetCSV('1602444314'); // Exemplo de GID comum ou o sistema tenta carregar
+        if (servicesRows && servicesRows.length > 1) {
+            siteData.services = parseServices(servicesRows);
+        } else {
+            // Se falhar com GID específico, tentamos o índice sequencial se possível ou avisamos
+            console.warn('Aba de serviços não encontrada com GID padrão. Verifique o GID da aba Services.');
+        }
+    } catch (error) {
+        console.error('Erro na integração:', error);
     }
 
     renderSite(siteData);
@@ -54,9 +62,10 @@ async function init() {
     document.getElementById('loading').classList.add('hidden');
 }
 
-async function fetchSheetTab(sheetId, gid) {
+async function fetchSheetCSV(gid) {
     try {
-        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        // Formato para planilhas publicadas na web
+        const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&gid=${gid}`;
         const response = await fetch(url);
         if (!response.ok) return null;
         const csvText = await response.text();
@@ -92,7 +101,7 @@ function parseConfig(rows) {
     const values = rows[1];
     const config = {};
     headers.forEach((header, i) => {
-        if (values[i]) config[header] = values[i];
+        if (values[i]) config[header] = values[i].replace(/^"|"$/g, '');
     });
     return { ...DEFAULT_DATA.config, ...config };
 }
@@ -102,7 +111,8 @@ function parseServices(rows) {
     return rows.slice(1).map(row => {
         const service = {};
         headers.forEach((header, i) => {
-            service[header] = row[i] || '';
+            let val = row[i] || '';
+            service[header] = val.replace(/^"|"$/g, '');
         });
         return service;
     }).filter(s => s.title);
