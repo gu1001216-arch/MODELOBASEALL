@@ -1,8 +1,8 @@
 // Configuração do Google Sheets
 const SHEET_ID = 'YOUR_SHEET_ID_HERE'; // O usuário deve substituir pelo ID da planilha dele
 const SHEET_TABS = {
-    config: '0',
-    services: '1'
+    config: '0', // GID da primeira aba (geralmente 0)
+    services: '1' // GID da segunda aba (geralmente 1 ou outro número após criar)
 };
 
 // Dados padrão caso a planilha não esteja configurada ou ocorra erro
@@ -30,23 +30,22 @@ const DEFAULT_DATA = {
 };
 
 async function init() {
-    let siteData = DEFAULT_DATA;
+    let siteData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 
     if (SHEET_ID && SHEET_ID !== 'YOUR_SHEET_ID_HERE') {
         try {
-            const [configRows, servicesRows] = await Promise.all([
-                fetchSheetTab(SHEET_ID, SHEET_TABS.config),
-                fetchSheetTab(SHEET_ID, SHEET_TABS.services)
-            ]);
-
-            if (configRows.length > 1) {
+            // Tentativa de carregar dados da planilha
+            const configRows = await fetchSheetTab(SHEET_ID, SHEET_TABS.config);
+            if (configRows && configRows.length > 1) {
                 siteData.config = parseConfig(configRows);
             }
-            if (servicesRows.length > 1) {
+
+            const servicesRows = await fetchSheetTab(SHEET_ID, SHEET_TABS.services);
+            if (servicesRows && servicesRows.length > 1) {
                 siteData.services = parseServices(servicesRows);
             }
         } catch (error) {
-            console.error('Erro ao carregar dados da planilha:', error);
+            console.error('Erro ao carregar dados da planilha. Usando dados padrão.', error);
         }
     }
 
@@ -56,17 +55,20 @@ async function init() {
 }
 
 async function fetchSheetTab(sheetId, gid) {
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Falha ao buscar aba');
-    const csvText = await response.text();
-    return parseCSV(csvText);
+    try {
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const csvText = await response.text();
+        return parseCSV(csvText);
+    } catch (e) {
+        return null;
+    }
 }
 
 function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
     return lines.map(line => {
-        // Parser simples de CSV que lida com aspas básicas
         const result = [];
         let current = '';
         let inQuotes = false;
@@ -86,17 +88,17 @@ function parseCSV(csvText) {
 }
 
 function parseConfig(rows) {
-    const headers = rows[0].map(h => h.toLowerCase());
+    const headers = rows[0].map(h => h.toLowerCase().trim());
     const values = rows[1];
     const config = {};
     headers.forEach((header, i) => {
-        config[header] = values[i] || '';
+        if (values[i]) config[header] = values[i];
     });
     return { ...DEFAULT_DATA.config, ...config };
 }
 
 function parseServices(rows) {
-    const headers = rows[0].map(h => h.toLowerCase());
+    const headers = rows[0].map(h => h.toLowerCase().trim());
     return rows.slice(1).map(row => {
         const service = {};
         headers.forEach((header, i) => {
@@ -109,10 +111,8 @@ function parseServices(rows) {
 function renderSite(data) {
     const { config, services } = data;
 
-    // Título da página
     document.title = config.businessname;
 
-    // Header
     const logoImg = document.getElementById('header-logo');
     if (config.businesslogo) {
         logoImg.src = config.businesslogo;
@@ -121,13 +121,11 @@ function renderSite(data) {
     }
     document.getElementById('header-name').textContent = config.businessname;
 
-    // Hero
     document.getElementById('hero-bg').style.backgroundImage = `url('${config.heroimage || DEFAULT_DATA.config.heroimage}')`;
     document.getElementById('hero-title').textContent = config.herotitle;
     document.getElementById('hero-subtitle').textContent = config.herosubtitle;
     document.getElementById('hero-btn').textContent = config.herobuttontext;
 
-    // Services
     const servicesGrid = document.getElementById('services-grid');
     servicesGrid.innerHTML = services.map(service => `
         <div class="bg-white p-8 rounded-2xl border border-border hover:shadow-xl transition-all group">
@@ -140,17 +138,14 @@ function renderSite(data) {
         </div>
     `).join('');
 
-    // About
     document.getElementById('about-image').src = config.aboutimage || DEFAULT_DATA.config.aboutimage;
     document.getElementById('about-title').textContent = config.abouttitle;
     document.getElementById('about-description').textContent = config.aboutdescription;
 
-    // Contact
     document.getElementById('contact-phone').textContent = config.businessphone;
     document.getElementById('contact-email').textContent = config.businessemail;
     document.getElementById('contact-address').textContent = config.businessaddress;
 
-    // Footer
     document.getElementById('footer-name').textContent = config.businessname;
     document.getElementById('footer-phone-link').textContent = config.businessphone;
     document.getElementById('footer-phone-link').href = `tel:${config.businessphone.replace(/\D/g, '')}`;
@@ -159,7 +154,6 @@ function renderSite(data) {
     document.getElementById('year').textContent = new Date().getFullYear();
     document.getElementById('footer-copyright-name').textContent = config.businessname;
 
-    // WhatsApp
     const waPhone = config.businessphone.replace(/\D/g, '');
     const waMsg = encodeURIComponent(`Olá! Gostaria de saber mais sobre os serviços da ${config.businessname}.`);
     document.getElementById('whatsapp-btn').href = `https://wa.me/${waPhone}?text=${waMsg}`;
@@ -180,5 +174,4 @@ function setupEventListeners() {
     });
 }
 
-// Iniciar
 init();
