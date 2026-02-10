@@ -46,7 +46,7 @@ async function init() {
         
         // Tentativa de carregar a segunda aba. Se falhar, mantém o padrão.
         // Em links /pubhtml, as abas são exportadas por ordem.
-        const servicesRows = await fetchSheetCSV('1602444314'); // Exemplo de GID comum ou o sistema tenta carregar
+        const servicesRows = await fetchSheetCSV('1832204562'); // GID real da aba Services identificado na planilha
         if (servicesRows && servicesRows.length > 1) {
             siteData.services = parseServices(servicesRows);
         } else {
@@ -55,6 +55,7 @@ async function init() {
         }
     } catch (error) {
         console.error('Erro na integração:', error);
+        alert('Atenção: Não foi possível carregar os dados da planilha. Verifique se ela está "Publicada na Web" corretamente.');
     }
 
     renderSite(siteData);
@@ -65,7 +66,7 @@ async function init() {
 async function fetchSheetCSV(gid) {
     try {
         // Formato para planilhas publicadas na web
-        const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&gid=${gid}`;
+        const url = `https://docs.google.com/spreadsheets/d/e/${PUB_ID}/pub?output=csv&gid=${gid}&t=${new Date().getTime()}`;
         const response = await fetch(url);
         if (!response.ok) return null;
         const csvText = await response.text();
